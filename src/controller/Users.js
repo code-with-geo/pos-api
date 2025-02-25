@@ -5,7 +5,7 @@ dotenv.config();
 
 export const addUser = async (req, res) => {
   try {
-    const { username, password, name } = req.body;
+    const { username, password, name, isAdmin } = req.body;
 
     let user = await UserModel.findOne({ username });
 
@@ -15,7 +15,7 @@ export const addUser = async (req, res) => {
       });
     }
 
-    user = await new UserModel({ username, password, name }).save();
+    user = await new UserModel({ username, password, name, isAdmin }).save();
 
     return res.status(200).send({
       message: "User successfully added to storage.",
@@ -44,7 +44,7 @@ export const loginUser = async (req, res) => {
 
     if (!user) {
       return res.status(400).send({
-        message: "Incorrect email or password. Please try again.",
+        message: "Incorrect username or password. Please try again.",
       });
     }
 
@@ -94,6 +94,56 @@ export const updateUser = async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).send({
+      message: "Please contact technical support.",
+    });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    let user = await UserModel.find({});
+
+    res.json({
+      user: user,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      message: "Please contact technical support.",
+    });
+  }
+};
+
+export const removeUser = async (req, res) => {
+  try {
+    const { userID } = req.body;
+
+    if (!userID.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.send({
+        responsecode: "402",
+        message: "User not found.",
+      });
+    }
+
+    let user = await UserModel.findOne({ _id: userID });
+
+    if (!user) {
+      return res.json({
+        responsecode: "402",
+        message: "User not found.",
+      });
+    }
+
+    await UserModel.deleteOne({ _id: userID });
+
+    return res.json({
+      responsecode: "200",
+      message: "User is successfully removed.",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      responsecode: "500",
       message: "Please contact technical support.",
     });
   }
