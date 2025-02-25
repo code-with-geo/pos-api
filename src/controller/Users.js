@@ -19,6 +19,7 @@ export const addUser = async (req, res) => {
 
     return res.status(200).send({
       message: "User successfully added to storage.",
+      users: user,
     });
   } catch (err) {
     console.log(err);
