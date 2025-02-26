@@ -4,7 +4,8 @@ const Schema = mongoose.Schema({
   productName: { type: String, require: true },
   productDescription: { type: String },
   productPrice: { type: Number },
-  isEnable: { type: Boolean, default: true },
+  productSpecification: { type: String },
+  productUnits: { type: Number, default: 1 },
 });
 
 Schema.virtual("id").get(function () {
