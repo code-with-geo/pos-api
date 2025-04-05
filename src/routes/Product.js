@@ -10,13 +10,19 @@ import {
   decreaseProductUnits,
 } from "../controller/Products.js";
 import { authenticateToken } from "../middleware/Authentication.js";
+import { MulterSetup } from "../middleware/Multer.js";
 
 const router = express.Router();
 
-router.post("/add", authenticateToken, addProduct);
+router.post("/add", authenticateToken, MulterSetup.single("file"), addProduct);
 router.get("/all", authenticateToken, getAllProducts);
 router.get("/:productId", authenticateToken, getProductById);
-router.put("/update/:productId", authenticateToken, updateProduct);
+router.put(
+  "/update/:productId",
+  authenticateToken,
+  MulterSetup.single("file"),
+  updateProduct
+);
 router.put("/update-units/:productId", authenticateToken, updateProductUnits);
 router.put(
   "/increase-units/:productId",

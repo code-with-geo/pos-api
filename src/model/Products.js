@@ -6,6 +6,7 @@ const Schema = mongoose.Schema({
   productPrice: { type: Number },
   productSpecification: { type: String },
   productUnits: { type: Number, default: 1 },
+  productImage: { type: String, default: "" },
 });
 
 Schema.virtual("id").get(function () {

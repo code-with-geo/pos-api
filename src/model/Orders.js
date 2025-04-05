@@ -33,6 +33,7 @@ const OrderSchema = mongoose.Schema({
   orderDateTime: { type: String, default: () => formatDateTime(new Date()) },
   paymentStatus: { type: String, default: "Unpaid" },
   orderStatus: { type: String, default: "Pending" },
+  isToGo: { type: Number, default: 0 },
 });
 
 OrderSchema.virtual("id").get(function () {

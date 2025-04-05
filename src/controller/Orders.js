@@ -4,7 +4,7 @@ import { ProductModel } from "../model/Products.js";
 
 export const createOrder = async (req, res) => {
   try {
-    const { userID, items } = req.body;
+    const { userID, items, isToGo } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).send({ message: "No items provided for order." });
@@ -32,6 +32,7 @@ export const createOrder = async (req, res) => {
     const order = await new OrdersModel({
       userID,
       total,
+      isToGo,
     }).save();
 
     // Create order items and update stock

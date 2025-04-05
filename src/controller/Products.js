@@ -1,6 +1,13 @@
 import { ProductModel } from "../model/Products.js";
 import dotenv from "dotenv";
 dotenv.config();
+import { storage } from "../database/Firebase.js";
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 export const addProduct = async (req, res) => {
   try {
@@ -20,12 +27,23 @@ export const addProduct = async (req, res) => {
       });
     }
 
+    const storageRef = ref(storage, "products/" + req.file.originalname);
+    const metadata = { contentType: req.file.mimetype };
+    const snapshot = await uploadBytesResumable(
+      storageRef,
+      req.file.buffer,
+      metadata
+    );
+
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
     product = await new ProductModel({
       productName,
       productDescription,
       productPrice,
       productSpecification,
       productUnits,
+      productImage: downloadURL,
     }).save();
 
     return res.status(200).send({
@@ -75,16 +93,67 @@ export const getProductById = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-    const updateData = req.body;
+    const {
+      productName,
+      productDescription,
+      productPrice,
+      productSpecification,
+      productUnits,
+    } = req.body;
 
-    const product = await ProductModel.findByIdAndUpdate(
-      productId,
-      updateData,
-      { new: true }
-    );
+    const product = await ProductModel.findOne({ _id: productId });
 
     if (!product) {
       return res.status(404).send({ message: "Product not found." });
+    }
+
+    let fileName = "";
+    if (req.file != null) {
+      fileName = req.file.originalname;
+      const desertRef = ref(storage, product.productImage);
+      deleteObject(desertRef);
+    } else {
+      fileName = product.productImage;
+    }
+
+    if (product.productImage != fileName) {
+      const storageRef = ref(storage, "products/" + req.file.originalname);
+      const metadata = { contentType: req.file.mimetype };
+      const snapshot = await uploadBytesResumable(
+        storageRef,
+        req.file.buffer,
+        metadata
+      );
+
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      await ProductModel.updateOne(
+        { _id: productId },
+        {
+          $set: {
+            productName,
+            productDescription,
+            productPrice,
+            productSpecification,
+            productUnits,
+            productImage: downloadURL,
+          },
+        }
+      );
+    } else {
+      await ProductModel.updateOne(
+        { _id: productId },
+        {
+          $set: {
+            productName,
+            productDescription,
+            productPrice,
+            productSpecification,
+            productUnits,
+            productImage: fileName,
+          },
+        }
+      );
     }
 
     return res.status(200).send({ message: "Product successfully updated." });
